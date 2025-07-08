@@ -4,6 +4,7 @@ import { ReactNode, useCallback, useMemo } from "react";
 import { AuthProvider } from "../react/client.js";
 import { AuthClient } from "../react/clientType.js";
 import { invalidateCache } from "./server/invalidateCache.js";
+import { ConvexError } from "convex/values";
 
 export function ConvexAuthNextjsClientProvider({
   apiRoute,
@@ -31,7 +32,11 @@ export function ConvexAuthNextjsClientProvider({
       });
       // Match error handling of Convex Actions
       if (response.status >= 400) {
-        throw new Error((await response.json()).error);
+        const responseJson = await response.json();
+        if (responseJson.errorData != undefined) {
+          throw new ConvexError(responseJson.errorData);
+        }
+        throw new Error(responseJson.error);
       }
       return await response.json();
     },
