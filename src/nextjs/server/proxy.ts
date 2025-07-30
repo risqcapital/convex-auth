@@ -42,7 +42,9 @@ export async function proxyAuthActionToConvex(
       headerName.startsWith("sec-ch-") ||
       headerName in ["user-agent", "accept", "accept-language", "content-type"]
     ) {
-      console.log(`${headerName}: ${headers.get(headerName)}`);
+      console.error({
+        [headerName]: headers.get(headerName),
+      });
     }
   }
 
