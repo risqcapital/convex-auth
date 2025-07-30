@@ -32,14 +32,6 @@ export async function proxyAuthActionToConvex(
   }
   const { action, args } = await request.json();
 
-  // parse all headers out of request.headers
-  args.requestHeaders = Object.fromEntries(
-    Array.from(request.headers.entries()).map(([key, value]) => [
-      key.toLowerCase(),
-      value,
-    ]),
-  );
-
   if (action !== "auth:signIn" && action !== "auth:signOut") {
     logVerbose(`Invalid action ${action}, returning 400`, verbose);
     return new Response("Invalid action", { status: 400 });
@@ -71,6 +63,26 @@ export async function proxyAuthActionToConvex(
   );
 
   if (action === "auth:signIn") {
+    args.requestContext = {
+      cloudflareRayId: request.headers.get("cf-ray") ?? undefined,
+      rawHeaders: {
+        "accept-language": request.headers.get("accept-language") ?? undefined,
+        "sec-ch-ua": request.headers.get("sec-ch-ua") ?? undefined,
+        "sec-ch-ua-mobile": request.headers.get("sec-ch-ua-mobile") ?? undefined,
+        "sec-ch-ua-platform": request.headers.get("sec-ch-ua-platform") ?? undefined,
+        "user-agent": request.headers.get("user-agent") ?? undefined,
+      },
+      proto: request.headers.get("x-forwarded-proto") ?? undefined,
+      ip: request.headers.get("x-real-ip") ?? undefined,
+      country: request.headers.get("x-open-next-country") ?? undefined,
+      region: request.headers.get("x-open-next-region") ?? undefined,
+      city: request.headers.get("x-open-next-city") ?? undefined,
+      latitude: request.headers.get("x-open-next-latitude") ?? undefined,
+      longitude: request.headers.get("x-open-next-longitude") ?? undefined,
+    }
+
+    args.serverAccessToken = process.env.AUTH_SERVER_ACCESS_TOKEN;
+
     let result: SignInAction["_returnType"];
     // Do not require auth when refreshing tokens or validating a code since they
     // are steps in the auth flow.

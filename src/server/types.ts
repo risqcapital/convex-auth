@@ -16,6 +16,45 @@ import { GenericId, Value } from "convex/values";
 import { ConvexCredentialsUserConfig } from "../providers/ConvexCredentials.js";
 import { GenericDoc } from "./convex_types.js";
 
+export type RequestContext = {
+  /**
+   * The Cloudflare Ray ID of the request, if available.
+   */
+  cloudflareRayId?: string;
+  /**
+   * The raw headers of the request.
+   */
+  rawHeaders?: Record<string, string | undefined>;
+  /**
+   * The protocol of the request (http or https).
+   */
+  proto?: string;
+  /**
+   * The IP address of the request.
+   */
+  ip?: string;
+  /**
+   * The country of the request, if available.
+   */
+  country?: string;
+  /**
+   * The region of the request, if available.
+   */
+  region?: string;
+  /**
+   * The city of the request, if available.
+   */
+  city?: string;
+  /**
+   * The latitude of the request, if available.
+   */
+  latitude?: string;
+  /**
+   * The longitude of the request, if available.
+   */
+  longitude?: string;
+}
+
 /**
  * The config for the Convex Auth library, passed to `convexAuth`.
  */
@@ -352,6 +391,7 @@ export type ConvexCredentialsConfig = ConvexCredentialsUserConfig<any> & {
  */
 export type GenericActionCtxWithAuthConfig<DataModel extends GenericDataModel> =
   GenericActionCtx<DataModel> & {
+    requestContext: Record<string, any>,
     auth: { config: ConvexAuthMaterializedConfig };
   };
 

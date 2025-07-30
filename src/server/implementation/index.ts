@@ -23,7 +23,7 @@ import {
 import {
   AuthProviderConfig,
   ConvexAuthConfig,
-  GenericActionCtxWithAuthConfig,
+  GenericActionCtxWithAuthConfig, RequestContext
 } from "../types.js";
 import { requireEnv } from "../utils.js";
 import { ActionCtx, MutationCtx, Tokens } from "./types.js";
@@ -129,7 +129,8 @@ export function convexAuth(config_: ConvexAuthConfig) {
   };
   const enrichCtx = <DataModel extends GenericDataModel>(
     ctx: GenericActionCtx<DataModel>,
-  ) => ({ ...ctx, auth: { ...ctx.auth, config } });
+    requestContext: RequestContext,
+  ) => ({ ...ctx, auth: { ...ctx.auth, config }, requestContext });
 
   const auth = {
     /**
@@ -396,6 +397,8 @@ export function convexAuth(config_: ConvexAuthConfig) {
         verifier: v.optional(v.string()),
         refreshToken: v.optional(v.string()),
         calledBy: v.optional(v.string()),
+        requestContext: v.any(),
+        serverAccessToken: v.string(),
       },
       handler: async (
         ctx,
@@ -406,6 +409,9 @@ export function convexAuth(config_: ConvexAuthConfig) {
         tokens?: Tokens | null;
         started?: boolean;
       }> => {
+        if (args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
+          throw new Error("Invalid server access token");
+        }
         if (args.calledBy !== undefined) {
           logWithLevel("INFO", `\`auth:signIn\` called by ${args.calledBy}`);
         }
@@ -413,7 +419,7 @@ export function convexAuth(config_: ConvexAuthConfig) {
           args.provider !== undefined
             ? getProviderOrThrow(args.provider)
             : null;
-        const result = await signInImpl(enrichCtx(ctx), provider, args, {
+        const result = await signInImpl(enrichCtx(ctx, args.requestContext), provider, args, {
           generateTokens: true,
           allowExtraProviders: false,
         });
