@@ -63,13 +63,6 @@ export async function proxyAuthActionToConvex(
   );
 
   if (action === "auth:signIn") {
-
-    // print all request.headers key-value pairs
-    console.log("Request Headers:");
-    for (const [key, value] of request.headers.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-
     args.requestContext = {
       cloudflareRayId: request.headers.get("cf-ray") ?? undefined,
       rawHeaders: {
