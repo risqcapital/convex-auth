@@ -98,7 +98,7 @@ async function createSession(
       stringToNumber(process.env.AUTH_SESSION_TOTAL_DURATION_MS) ??
       DEFAULT_SESSION_TOTAL_DURATION_MS);
   const sessionId = await ctx.db.insert("authSessions", { expirationTime, userId });
-  await ctx.db.insert("authSessionAudit", {
+  await ctx.db.insert("authLoginHistory", {
     userId,
     sessionId,
     requestContext,

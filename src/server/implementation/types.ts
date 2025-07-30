@@ -66,11 +66,13 @@ export const authTables = {
    *
    * This is useful for debugging and auditing purposes.
    */
-  authSessionAudit: defineTable({
+  authLoginHistory: defineTable({
     userId: v.id("users"),
     sessionId: v.id("authSessions"),
     requestContext: requestContext,
-  }),
+  })
+    .index("sessionId", ["sessionId"])
+    .index("userId", ["userId"]),
   /**
    * Accounts. An account corresponds to
    * a single authentication provider.
