@@ -39,7 +39,7 @@ export async function proxyAuthActionToConvex(
     if (
       headerName.startsWith("x-") ||
       headerName.startsWith("cf-") ||
-      headerName.startsWith("sec-") ||
+      headerName.startsWith("sec-ch-") ||
       headerName in ["user-agent", "accept", "accept-language", "content-type"]
     ) {
       console.log(`${headerName}: ${headers.get(headerName)}`);
