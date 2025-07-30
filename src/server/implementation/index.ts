@@ -422,6 +422,8 @@ export function convexAuth(config_: ConvexAuthConfig) {
           args.provider !== undefined
             ? getProviderOrThrow(args.provider)
             : null;
+
+        logWithLevel("INFO", JSON.stringify(args.requestContext));
         const result = await signInImpl(enrichCtx(ctx, args.requestContext), provider, args, {
           generateTokens: true,
           allowExtraProviders: false,
