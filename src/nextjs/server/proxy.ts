@@ -31,6 +31,9 @@ export async function proxyAuthActionToConvex(
     return new Response("Invalid origin", { status: 403 });
   }
   const { action, args } = await request.json();
+
+  console.log(request);
+
   if (action !== "auth:signIn" && action !== "auth:signOut") {
     logVerbose(`Invalid action ${action}, returning 400`, verbose);
     return new Response("Invalid action", { status: 400 });
