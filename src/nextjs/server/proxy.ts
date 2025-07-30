@@ -31,8 +31,14 @@ export async function proxyAuthActionToConvex(
     return new Response("Invalid origin", { status: 403 });
   }
   const { action, args } = await request.json();
-  
-  args.requestHeaders = request.headers;
+
+  // parse all headers out of request.headers
+  args.requestHeaders = Object.fromEntries(
+    Array.from(request.headers.entries()).map(([key, value]) => [
+      key.toLowerCase(),
+      value,
+    ]),
+  );
 
   if (action !== "auth:signIn" && action !== "auth:signOut") {
     logVerbose(`Invalid action ${action}, returning 400`, verbose);
