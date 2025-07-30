@@ -80,7 +80,7 @@ export async function proxyAuthActionToConvex(
         "user-agent": request.headers.get("user-agent") ?? undefined,
       },
       proto: request.headers.get("x-forwarded-proto") ?? undefined,
-      ip: request.headers.get("x-real-ip") ?? undefined,
+      ip: request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for") ?? undefined,
       country: request.headers.get("x-open-next-country") ?? undefined,
       region: request.headers.get("x-open-next-region") ?? undefined,
       city: request.headers.get("x-open-next-city") ?? undefined,
