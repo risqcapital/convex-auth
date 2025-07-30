@@ -15,6 +15,7 @@ import {
   formatRefreshToken,
   deleteAllRefreshTokens,
 } from "./refreshTokens.js";
+import { RequestContext } from "../types";
 
 const DEFAULT_SESSION_TOTAL_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
@@ -43,6 +44,7 @@ export async function createNewAndDeleteExistingSession(
   ctx: MutationCtx,
   config: ConvexAuthConfig,
   userId: GenericId<"users">,
+  requestContext: RequestContext,
 ) {
   const existingSessionId = await getAuthSessionId(ctx);
   if (existingSessionId !== null) {
@@ -51,7 +53,7 @@ export async function createNewAndDeleteExistingSession(
       await deleteSession(ctx, existingSession);
     }
   }
-  return await createSession(ctx, userId, config);
+  return await createSession(ctx, userId, config, requestContext);
 }
 
 export async function generateTokensForSession(
@@ -88,13 +90,20 @@ async function createSession(
   ctx: MutationCtx,
   userId: GenericId<"users">,
   config: ConvexAuthConfig,
+  requestContext: RequestContext,
 ) {
   const expirationTime =
     Date.now() +
     (config.session?.totalDurationMs ??
       stringToNumber(process.env.AUTH_SESSION_TOTAL_DURATION_MS) ??
       DEFAULT_SESSION_TOTAL_DURATION_MS);
-  return await ctx.db.insert("authSessions", { expirationTime, userId });
+  const sessionId = await ctx.db.insert("authSessions", { expirationTime, userId });
+  await ctx.db.insert("authSessionAudit", {
+    userId,
+    sessionId,
+    requestContext,
+  })
+  return sessionId;
 }
 
 export async function deleteSession(

@@ -23,7 +23,7 @@ import {
 import {
   AuthProviderConfig,
   ConvexAuthConfig,
-  GenericActionCtxWithAuthConfig, RequestContext
+  GenericActionCtxWithAuthConfig, requestContext, RequestContext
 } from "../types.js";
 import { requireEnv } from "../utils.js";
 import { ActionCtx, MutationCtx, Tokens } from "./types.js";
@@ -129,8 +129,7 @@ export function convexAuth(config_: ConvexAuthConfig) {
   };
   const enrichCtx = <DataModel extends GenericDataModel>(
     ctx: GenericActionCtx<DataModel>,
-    requestContext: RequestContext,
-  ) => ({ ...ctx, auth: { ...ctx.auth, config }, requestContext });
+  ) => ({ ...ctx, auth: { ...ctx.auth, config } });
 
   const auth = {
     /**
@@ -397,7 +396,7 @@ export function convexAuth(config_: ConvexAuthConfig) {
         verifier: v.optional(v.string()),
         refreshToken: v.optional(v.string()),
         calledBy: v.optional(v.string()),
-        requestContext: v.optional(v.any()),
+        requestContext: v.optional(requestContext),
         serverAccessToken: v.optional(v.string()),
       },
       handler: async (
@@ -409,12 +408,6 @@ export function convexAuth(config_: ConvexAuthConfig) {
         tokens?: Tokens | null;
         started?: boolean;
       }> => {
-        if (args.requestContext === undefined) {
-          throw new Error("Missing request context");
-        }
-        if (args.serverAccessToken === undefined || args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
-          throw new Error("Invalid server access token");
-        }
         if (args.calledBy !== undefined) {
           logWithLevel("INFO", `\`auth:signIn\` called by ${args.calledBy}`);
         }
@@ -423,8 +416,13 @@ export function convexAuth(config_: ConvexAuthConfig) {
             ? getProviderOrThrow(args.provider)
             : null;
 
-        logWithLevel("INFO", JSON.stringify(args.requestContext));
-        const result = await signInImpl(enrichCtx(ctx, args.requestContext), provider, args, {
+        if (args.requestContext === undefined) {
+          throw new Error("Missing request context");
+        }
+        if (args.serverAccessToken === undefined || args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
+          throw new Error("Invalid server access token");
+        }
+        const result = await signInImpl(enrichCtx(ctx), provider, {...args, requestContext: args.requestContext}, {
           generateTokens: true,
           allowExtraProviders: false,
         });
@@ -679,6 +677,7 @@ export async function signInViaProvider<
   args: {
     accountId?: GenericId<"authAccounts">;
     params?: Record<string, Value | undefined>;
+    requestContext: RequestContext;
   },
 ) {
   const result = await signInImpl(ctx, materializeProvider(provider), args, {

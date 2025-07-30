@@ -6,11 +6,13 @@ import {
   maybeGenerateTokensForSession,
 } from "../sessions.js";
 import { LOG_LEVELS, logWithLevel } from "../utils.js";
+import { requestContext } from "../../types";
 
 export const signInArgs = v.object({
   userId: v.id("users"),
   sessionId: v.optional(v.id("authSessions")),
   generateTokens: v.boolean(),
+  requestContext: requestContext
 });
 
 type ReturnType = SessionInfo;
@@ -24,7 +26,7 @@ export async function signInImpl(
   const { userId, sessionId: existingSessionId, generateTokens } = args;
   const sessionId =
     existingSessionId ??
-    (await createNewAndDeleteExistingSession(ctx, config, userId));
+    (await createNewAndDeleteExistingSession(ctx, config, userId, args.requestContext));
   return await maybeGenerateTokensForSession(
     ctx,
     config,

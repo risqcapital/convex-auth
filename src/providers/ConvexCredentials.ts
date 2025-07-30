@@ -29,6 +29,7 @@ import {
 } from "@convex-dev/auth/server";
 import { GenericDataModel } from "convex/server";
 import { GenericId, Value } from "convex/values";
+import { RequestContext } from "../server/types";
 
 /**
  * The available options to a {@link ConvexCredentials} provider for Convex Auth.
@@ -59,6 +60,7 @@ export interface ConvexCredentialsUserConfig<
      */
     credentials: Partial<Record<string, Value | undefined>>,
     ctx: GenericActionCtxWithAuthConfig<DataModel>,
+    requestContext: RequestContext,
   ) => Promise<{
     userId: GenericId<"users">;
     sessionId?: GenericId<"authSessions">;

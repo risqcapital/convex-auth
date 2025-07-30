@@ -11,7 +11,7 @@ import {
   getAuthSessionId,
   maybeGenerateTokensForSession,
 } from "../sessions.js";
-import { ConvexAuthConfig } from "../../types.js";
+import { ConvexAuthConfig, requestContext } from "../../types.js";
 import { LOG_LEVELS, logWithLevel, sha256 } from "../utils.js";
 import { upsertUserAndAccount } from "../users.js";
 
@@ -21,6 +21,7 @@ export const verifyCodeAndSignInArgs = v.object({
   verifier: v.optional(v.string()),
   generateTokens: v.boolean(),
   allowExtraProviders: v.boolean(),
+  requestContext: requestContext
 });
 
 type ReturnType = null | SessionInfo;
@@ -37,8 +38,9 @@ export async function verifyCodeAndSignInImpl(
     verifier: args.verifier,
     generateTokens: args.generateTokens,
     allowExtraProviders: args.allowExtraProviders,
+    requestContext: args.requestContext,
   });
-  const { generateTokens, provider, allowExtraProviders } = args;
+  const { generateTokens, provider, allowExtraProviders, requestContext } = args;
   const identifier = args.params.email ?? args.params.phone;
   if (identifier !== undefined) {
     if (await isSignInRateLimited(ctx, identifier, config)) {
@@ -72,6 +74,7 @@ export async function verifyCodeAndSignInImpl(
     ctx,
     config,
     userId,
+    requestContext
   );
   return await maybeGenerateTokensForSession(
     ctx,
