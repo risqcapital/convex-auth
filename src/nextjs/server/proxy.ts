@@ -32,13 +32,19 @@ export async function proxyAuthActionToConvex(
   }
   const { action, args } = await request.json();
 
-  console.log([...request.headers.keys()]);
-  console.log(request.headers.get("sec-ch-ua"));
-  console.log(request.headers.get("sec-ch-ua-mobile"));
-  console.log(request.headers.get("sec-ch-ua-platform"));
-  console.log(request.headers.get("user-agent"));
-  console.log(request.headers.get("x-forwarded-for"));
-  console.log(request.headers.get("x-forwarded-proto"));
+  // print all x- and cf-, sec- and user-agent headers for debugging
+  const headers = request.headers;
+  const headerNames = headers.keys();
+  for (const headerName of headerNames) {
+    if (
+      headerName.startsWith("x-") ||
+      headerName.startsWith("cf-") ||
+      headerName.startsWith("sec-") ||
+      headerName in ["user-agent", "accept", "accept-language", "content-type"]
+    ) {
+      console.log(`${headerName}: ${headers.get(headerName)}`);
+    }
+  }
 
   if (action !== "auth:signIn" && action !== "auth:signOut") {
     logVerbose(`Invalid action ${action}, returning 400`, verbose);
