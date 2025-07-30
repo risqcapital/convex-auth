@@ -34,6 +34,11 @@ export async function proxyAuthActionToConvex(
 
   // print all x- and cf-, sec- and user-agent headers for debugging
   const headers = request.headers;
+  console.error({
+    debug: "HEADERS",
+    headers: Object.fromEntries(headers.entries()),
+  })
+
   const headerNames = headers.keys();
   for (const headerName of headerNames) {
     if (
