@@ -32,7 +32,7 @@ export async function proxyAuthActionToConvex(
   }
   const { action, args } = await request.json();
 
-  console.log(request.headers.keys());
+  console.log([...request.headers.keys()]);
   console.log(request.headers.get("sec-ch-ua"));
   console.log(request.headers.get("sec-ch-ua-mobile"));
   console.log(request.headers.get("sec-ch-ua-platform"));
