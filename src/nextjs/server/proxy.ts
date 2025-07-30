@@ -31,27 +31,8 @@ export async function proxyAuthActionToConvex(
     return new Response("Invalid origin", { status: 403 });
   }
   const { action, args } = await request.json();
-
-  // print all x- and cf-, sec- and user-agent headers for debugging
-  const headers = request.headers;
-  console.error({
-    debug: "HEADERS",
-    headers: Object.fromEntries(headers.entries()),
-  })
-
-  const headerNames = headers.keys();
-  for (const headerName of headerNames) {
-    if (
-      headerName.startsWith("x-") ||
-      headerName.startsWith("cf-") ||
-      headerName.startsWith("sec-ch-") ||
-      headerName in ["user-agent", "accept", "accept-language", "content-type"]
-    ) {
-      console.error({
-        [headerName]: headers.get(headerName),
-      });
-    }
-  }
+  
+  args.requestHeaders = request.headers;
 
   if (action !== "auth:signIn" && action !== "auth:signOut") {
     logVerbose(`Invalid action ${action}, returning 400`, verbose);
