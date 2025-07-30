@@ -101,11 +101,7 @@ async function createSession(
   await ctx.db.insert("authSessionContext", {
     userId,
     sessionId,
-    requestContext,
-    ip: requestContext.ip,
-    country: requestContext.country,
-    region: requestContext.region,
-    city: requestContext.city,
+    ...requestContext,
   })
   return sessionId;
 }
