@@ -1,4 +1,4 @@
-import { GenericId } from "convex/values";
+import { ConvexError, GenericId } from "convex/values";
 import {
   AuthProviderMaterializedConfig,
   ConvexCredentialsConfig,
@@ -113,7 +113,7 @@ async function handleEmailAndPhoneProvider(
       allowExtraProviders: options.allowExtraProviders,
     });
     if (result === null) {
-      throw new Error("Could not verify code");
+      throw new ConvexError("Could not verify code");
     }
     return {
       kind: "signedIn",
