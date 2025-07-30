@@ -66,10 +66,14 @@ export const authTables = {
    *
    * This is useful for debugging and auditing purposes.
    */
-  authLoginHistory: defineTable({
+  authSessionContext: defineTable({
     userId: v.id("users"),
     sessionId: v.id("authSessions"),
-    requestContext: requestContext,
+    ip: v.optional(v.string()),
+    country: v.optional(v.string()),
+    region: v.optional(v.string()),
+    city: v.optional(v.string()),
+    requestContext,
   })
     .index("sessionId", ["sessionId"])
     .index("userId", ["userId"]),
