@@ -397,8 +397,8 @@ export function convexAuth(config_: ConvexAuthConfig) {
         verifier: v.optional(v.string()),
         refreshToken: v.optional(v.string()),
         calledBy: v.optional(v.string()),
-        requestContext: v.any(),
-        serverAccessToken: v.string(),
+        requestContext: v.optional(v.any()),
+        serverAccessToken: v.optional(v.string()),
       },
       handler: async (
         ctx,
@@ -409,7 +409,10 @@ export function convexAuth(config_: ConvexAuthConfig) {
         tokens?: Tokens | null;
         started?: boolean;
       }> => {
-        if (args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
+        if (args.requestContext === undefined) {
+          throw new Error("Missing request context");
+        }
+        if (args.serverAccessToken === undefined || args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
           throw new Error("Invalid server access token");
         }
         if (args.calledBy !== undefined) {
