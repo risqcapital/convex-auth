@@ -9,6 +9,7 @@ import {
 } from "convex/server";
 import { GenericId, v } from "convex/values";
 import { GenericDoc } from "../convex_types.js";
+import { requestContext } from "../types";
 
 /**
  * The table definitions required by the library.
@@ -57,6 +58,21 @@ export const authTables = {
     userId: v.id("users"),
     expirationTime: v.number(),
   }).index("userId", ["userId"]),
+
+  /**
+   * Auth session audit log.
+   * This table is used to log the creation of auth sessions
+   * and to store the request context of the session creation.
+   *
+   * This is useful for debugging and auditing purposes.
+   */
+  authSessionContext: defineTable({
+    userId: v.id("users"),
+    sessionId: v.id("authSessions"),
+    ...requestContext.fields
+  })
+    .index("sessionId", ["sessionId"])
+    .index("userId", ["userId"]),
   /**
    * Accounts. An account corresponds to
    * a single authentication provider.

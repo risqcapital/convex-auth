@@ -118,7 +118,7 @@ export function Password<DataModel extends GenericDataModel>(
   const provider = config.id ?? "password";
   return ConvexCredentials<DataModel>({
     id: "password",
-    authorize: async (params, ctx) => {
+    authorize: async (params, ctx, requestContext) => {
       const flow = params.flow as string;
       const passwordToValidate =
         flow === "signUp"
@@ -174,6 +174,7 @@ export function Password<DataModel extends GenericDataModel>(
         return await signInViaProvider(ctx, config.reset, {
           accountId: account._id,
           params,
+          requestContext,
         });
       } else if (flow === "reset-verification") {
         if (!config.reset) {
@@ -184,7 +185,7 @@ export function Password<DataModel extends GenericDataModel>(
             "Missing `newPassword` param for `reset-verification` flow",
           );
         }
-        const result = await signInViaProvider(ctx, config.reset, { params });
+        const result = await signInViaProvider(ctx, config.reset, { params, requestContext });
         if (result === null) {
           throw new Error("Invalid code");
         }
@@ -209,6 +210,7 @@ export function Password<DataModel extends GenericDataModel>(
         return await signInViaProvider(ctx, config.verify, {
           accountId: account._id,
           params,
+          requestContext,
         });
         // END
       } else {
@@ -223,6 +225,7 @@ export function Password<DataModel extends GenericDataModel>(
         return await signInViaProvider(ctx, config.verify, {
           accountId: account._id,
           params,
+          requestContext,
         });
       }
       // END

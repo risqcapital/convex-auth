@@ -1,10 +1,10 @@
-import { ConvexError, GenericId } from "convex/values";
+import { ConvexError, GenericId, v } from "convex/values";
 import {
   AuthProviderMaterializedConfig,
   ConvexCredentialsConfig,
   EmailConfig,
   GenericActionCtxWithAuthConfig,
-  PhoneConfig,
+  PhoneConfig, RequestContext
 } from "../types.js";
 import {
   AuthDataModel,
@@ -37,6 +37,7 @@ export async function signInImpl(
     verifier?: string;
     refreshToken?: string;
     calledBy?: string;
+    requestContext: RequestContext;
   },
   options: {
     generateTokens: boolean;
@@ -63,6 +64,7 @@ export async function signInImpl(
       verifier: args.verifier,
       generateTokens: true,
       allowExtraProviders: options.allowExtraProviders,
+      requestContext: args.requestContext,
     });
     return {
       kind: "signedIn",
@@ -96,6 +98,7 @@ async function handleEmailAndPhoneProvider(
   args: {
     params?: Record<string, any>;
     accountId?: GenericId<"authAccounts">;
+    requestContext: RequestContext;
   },
   options: {
     generateTokens: boolean;
@@ -111,6 +114,7 @@ async function handleEmailAndPhoneProvider(
       provider: provider.id,
       generateTokens: options.generateTokens,
       allowExtraProviders: options.allowExtraProviders,
+      requestContext: args.requestContext,
     });
     if (result === null) {
       throw new ConvexError("Could not verify code");
@@ -181,12 +185,13 @@ async function handleCredentials(
   provider: ConvexCredentialsConfig,
   args: {
     params?: Record<string, any>;
+    requestContext: RequestContext;
   },
   options: {
     generateTokens: boolean;
   },
 ): Promise<{ kind: "signedIn"; signedIn: SessionInfo | null }> {
-  const result = await provider.authorize(args.params ?? {}, ctx);
+  const result = await provider.authorize(args.params ?? {}, ctx, args.requestContext);
   if (result === null) {
     return { kind: "signedIn", signedIn: null };
   }
@@ -194,6 +199,7 @@ async function handleCredentials(
     userId: result.userId,
     sessionId: result.sessionId,
     generateTokens: options.generateTokens,
+    requestContext: args.requestContext,
   });
   return {
     kind: "signedIn",
@@ -207,6 +213,7 @@ async function handleOAuthProvider(
   args: {
     params?: Record<string, any>;
     verifier?: string;
+    requestContext: RequestContext;
   },
   options: {
     allowExtraProviders: boolean;
@@ -228,6 +235,7 @@ async function handleOAuthProvider(
       verifier: args.verifier,
       generateTokens: true,
       allowExtraProviders: options.allowExtraProviders,
+      requestContext: args.requestContext,
     });
     return {
       kind: "signedIn",

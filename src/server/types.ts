@@ -12,9 +12,23 @@ import {
   GenericDataModel,
   GenericMutationCtx,
 } from "convex/server";
-import { GenericId, Value } from "convex/values";
+import { GenericId, Infer, v, Value } from "convex/values";
 import { ConvexCredentialsUserConfig } from "../providers/ConvexCredentials.js";
 import { GenericDoc } from "./convex_types.js";
+
+export const requestContext = v.object({
+  cloudflareRayId: v.optional(v.string()),
+  rawHeaders: v.optional(v.record(v.string(), v.string())),
+  proto: v.optional(v.string()),
+  ip: v.optional(v.string()),
+  country: v.optional(v.string()),
+  region: v.optional(v.string()),
+  city: v.optional(v.string()),
+  latitude: v.optional(v.string()),
+  longitude: v.optional(v.string()),
+});
+
+export type RequestContext = Infer<typeof requestContext>;
 
 /**
  * The config for the Convex Auth library, passed to `convexAuth`.

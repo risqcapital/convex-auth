@@ -23,7 +23,7 @@ import {
 import {
   AuthProviderConfig,
   ConvexAuthConfig,
-  GenericActionCtxWithAuthConfig,
+  GenericActionCtxWithAuthConfig, requestContext, RequestContext
 } from "../types.js";
 import { requireEnv } from "../utils.js";
 import { ActionCtx, MutationCtx, Tokens } from "./types.js";
@@ -396,6 +396,8 @@ export function convexAuth(config_: ConvexAuthConfig) {
         verifier: v.optional(v.string()),
         refreshToken: v.optional(v.string()),
         calledBy: v.optional(v.string()),
+        requestContext: v.optional(requestContext),
+        serverAccessToken: v.optional(v.string()),
       },
       handler: async (
         ctx,
@@ -413,7 +415,14 @@ export function convexAuth(config_: ConvexAuthConfig) {
           args.provider !== undefined
             ? getProviderOrThrow(args.provider)
             : null;
-        const result = await signInImpl(enrichCtx(ctx), provider, args, {
+
+        if (args.requestContext === undefined) {
+          throw new Error("Missing request context");
+        }
+        if (args.serverAccessToken === undefined || args.serverAccessToken !== requireEnv("AUTH_SERVER_ACCESS_TOKEN")) {
+          throw new Error("Invalid server access token");
+        }
+        const result = await signInImpl(enrichCtx(ctx), provider, {...args, requestContext: args.requestContext}, {
           generateTokens: true,
           allowExtraProviders: false,
         });
@@ -668,6 +677,7 @@ export async function signInViaProvider<
   args: {
     accountId?: GenericId<"authAccounts">;
     params?: Record<string, Value | undefined>;
+    requestContext: RequestContext;
   },
 ) {
   const result = await signInImpl(ctx, materializeProvider(provider), args, {
